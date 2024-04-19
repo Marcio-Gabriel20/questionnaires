@@ -17,47 +17,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hiro.questionnaires.dto.LoginRequest;
 import com.hiro.questionnaires.dto.LoginResponse;
-import com.hiro.questionnaires.entity.Role;
-import com.hiro.questionnaires.entity.User;
-import com.hiro.questionnaires.repository.UserRepository;
+import com.hiro.questionnaires.service.TokenService;
 
 @RestController
 public class TokenController {
     @Autowired
-    private JwtEncoder jwtEncoder;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private TokenService tokenService;
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        Optional<User> user = userRepository.findByLogin(loginRequest.login());
+        if(loginRequest != null && !loginRequest.login().isBlank() && !loginRequest.password().isBlank()) {
+            LoginResponse loginResponse = tokenService.login(loginRequest);
 
-        if(user.isEmpty() || !user.get().isLoginCorrect(loginRequest, passwordEncoder)) {
-            throw new BadCredentialsException("User or password is invalid!");
+            return ResponseEntity.ok(loginResponse);
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
         }
 
-        Instant now = Instant.now();
-        Long expiresIn = 300L;
-
-        String scopes = user.get().getRoles()
-                .stream()
-                .map(Role::getName)
-                .collect(Collectors.joining(" "));
-        
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("questionnairesBackend")
-                .subject(user.get().getUserId().toString())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn))
-                .claim("scopes", scopes)
-                .build();
-
-        String jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-        return ResponseEntity.ok(new LoginResponse(jwtValue, expiresIn));
     }
 }

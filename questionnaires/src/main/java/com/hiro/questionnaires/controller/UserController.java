@@ -1,52 +1,34 @@
 package com.hiro.questionnaires.controller;
 
-import java.util.Optional;
-import java.util.Set;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.hiro.questionnaires.dto.CreateUserDto;
-import com.hiro.questionnaires.entity.Role;
-import com.hiro.questionnaires.entity.User;
-import com.hiro.questionnaires.enums.RoleType;
-import com.hiro.questionnaires.repository.RoleRepository;
-import com.hiro.questionnaires.repository.UserRepository;
-
-import jakarta.transaction.Transactional;
+import com.hiro.questionnaires.service.UserService;
 
 @RestController
 public class UserController {
     @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-
-    @Transactional
-    @PostMapping("/users")
+    @PostMapping("/user")
     public ResponseEntity<Void> newUser(@RequestBody CreateUserDto dto) {
-        Role basicRole = roleRepository.findByName(RoleType.BASIC.name());
-        
-        Optional<User> userFromDb = userRepository.findByLogin(dto.login());
+        if(dto != null && !dto.login().isBlank() && !dto.password().isBlank()) {
+            HttpStatus newUser = userService.newUser(dto);
 
-        if(userFromDb.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+            if(newUser == HttpStatus.CREATED) {
+                return ResponseEntity.status(201).build();
+            } else if(newUser == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(409).build();
+            } else {
+                return ResponseEntity.status(500).build();
+            }
+        } else {
+            return ResponseEntity.status(422).build();
         }
-
-        User user = new User(dto.login(), passwordEncoder.encode(dto.password()), Set.of(basicRole));
-
-        userRepository.save(user);
-
-        return ResponseEntity.ok().build();
     }
 }

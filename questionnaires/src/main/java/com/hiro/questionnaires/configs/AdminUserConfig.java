@@ -6,7 +6,9 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.hiro.questionnaires.entity.Role;
 import com.hiro.questionnaires.entity.User;
@@ -36,14 +38,11 @@ public class AdminUserConfig implements CommandLineRunner {
 
         userAdmin.ifPresentOrElse(
             (user) -> {
-                System.out.println("Admin já existe");
+                throw new ResponseStatusException(HttpStatus.CONFLICT);
             },
 
             () -> {
-                User user = new User();
-                user.setLogin("admin");
-                user.setPassword(passwordEncoder.encode("admin"));
-                user.setRoles(Set.of(roleAdmin));
+                User user = new User("admin", passwordEncoder.encode("admin"), Set.of(roleAdmin));
 
                 userRepository.save(user);
             }
