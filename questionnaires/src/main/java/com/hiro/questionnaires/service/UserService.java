@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -77,5 +78,9 @@ public class UserService {
 
             return null;
         }
+    }
+
+    public HttpStatus updateUsers(UUID id, User user) {
+        
     }
 }
