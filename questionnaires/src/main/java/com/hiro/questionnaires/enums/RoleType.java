@@ -2,7 +2,7 @@ package com.hiro.questionnaires.enums;
 
 public enum RoleType {
     ADMIN(1L),
-    BASIC(2L);
+    USER(2L);
 
     private long roleId;
 

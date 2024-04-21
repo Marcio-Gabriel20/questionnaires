@@ -34,6 +34,7 @@ public class AdminUserConfig implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws Exception {
         Role roleAdmin = roleRepository.findByName(RoleType.ADMIN.name());
+
         Optional<User> userAdmin = userRepository.findByLogin("admin");
 
         userAdmin.ifPresentOrElse(
@@ -42,7 +43,11 @@ public class AdminUserConfig implements CommandLineRunner {
             },
 
             () -> {
-                User user = new User("admin", passwordEncoder.encode("admin"), Set.of(roleAdmin));
+
+                User user = new User();
+                user.setLogin("admin");
+                user.setPassword(passwordEncoder.encode("admin"));
+                user.setRoles(Set.of(roleAdmin));
 
                 userRepository.save(user);
             }

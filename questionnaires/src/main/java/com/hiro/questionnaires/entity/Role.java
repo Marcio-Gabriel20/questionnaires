@@ -1,7 +1,5 @@
 package com.hiro.questionnaires.entity;
 
-import com.hiro.questionnaires.enums.RoleType;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -18,20 +16,17 @@ public class Role {
     private Long roleId;
 
     private String name;
-    private RoleType roleType;
     
     public Role() {
     }
 
-    public Role(Long roleId, String name, RoleType roleType) {
+    public Role(Long roleId, String name) {
         this.roleId = roleId;
         this.name = name;
-        this.roleType = roleType;
     }
 
-    public Role(String name, RoleType roleType) {
+    public Role(String name) {
         this.name = name;
-        this.roleType = roleType;
     }
 
     public Long getRoleId() {
@@ -48,14 +43,6 @@ public class Role {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public RoleType getRoleType() {
-        return roleType;
-    }
-
-    public void setRoleType(RoleType roleType) {
-        this.roleType = roleType;
     }
     
 }

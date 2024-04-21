@@ -1,15 +1,21 @@
 package com.hiro.questionnaires.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hiro.questionnaires.dto.CreateUserDto;
+import com.hiro.questionnaires.dto.UserResponse;
 import com.hiro.questionnaires.service.UserService;
 
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 public class UserController {
     @Autowired
@@ -30,5 +36,16 @@ public class UserController {
         } else {
             return ResponseEntity.status(422).build();
         }
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponse>> listUsers() {
+        List<UserResponse> users = userService.listUsers();
+
+        if(users == null) {
+            return ResponseEntity.status(404).build();
+        }
+
+        return ResponseEntity.status(200).body(users);
     }
 }
