@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hiro.questionnaires.dto.CreateUserDto;
+import com.hiro.questionnaires.dto.UserDto;
 import com.hiro.questionnaires.dto.UserResponse;
 import com.hiro.questionnaires.entity.Role;
 import com.hiro.questionnaires.entity.User;
@@ -34,7 +34,7 @@ public class UserService {
     private BCryptPasswordEncoder passwordEncoder;
 
     @Transactional
-    public HttpStatus newUser(CreateUserDto dto) {
+    public HttpStatus newUser(UserDto dto) {
         try {
             Role userRole = roleRepository.findByName(RoleType.USER.name());
 
@@ -80,7 +80,72 @@ public class UserService {
         }
     }
 
-    public HttpStatus updateUsers(UUID id, User user) {
-        
+    public HttpStatus updateUser(UUID id, UserDto dto) {
+        try {
+            Optional<User> userFromDb = userRepository.findById(id);
+
+            if(userFromDb.isPresent()) {
+                User user = userFromDb.get();
+
+                user.setLogin(dto.login());
+                user.setPassword(passwordEncoder.encode(dto.password()));
+
+                userRepository.save(user);
+
+                return HttpStatus.OK;
+            } else {
+                return HttpStatus.NOT_FOUND;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus patchUpdateUser(UUID id, UserDto dto) {
+        try {
+            Optional<User> userFromDb = userRepository.findById(id);
+
+            if(userFromDb.isPresent()) {
+                User user = userFromDb.get();
+
+                if(dto.login() != null) {
+                    user.setLogin(dto.login());
+                }
+
+                if(dto.password() != null) {
+                    user.setPassword(passwordEncoder.encode(dto.password()));
+                }
+
+                userRepository.save(user);
+
+                return HttpStatus.OK;
+            } else {
+                return HttpStatus.NOT_FOUND;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus deleteUser(UUID id) {
+        try {
+            Optional<User> userFromDb = userRepository.findById(id);
+
+            if(userFromDb.isPresent()) {
+                userRepository.deleteById(id);
+
+                return HttpStatus.OK;
+            } else {
+                return HttpStatus.NOT_FOUND;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
     }
 }
