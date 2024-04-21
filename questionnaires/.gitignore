@@ -33,4 +33,5 @@ build/
 .vscode/
 
 ### Key ###
+app.key
 app.pub
