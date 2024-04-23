@@ -64,10 +64,6 @@ public class UserService {
             List<User> usersFromDb = userRepository.findAll();
             List<UserResponse> users = new ArrayList<>();
 
-            if(usersFromDb.isEmpty()) {
-                return null;
-            }
-
             for (User user : usersFromDb) {
                 users.add(UserMapper.getInstance().entityToResponse(user));
             }

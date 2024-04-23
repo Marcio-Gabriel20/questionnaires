@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hiro.questionnaires.dto.AnswerDto;
+import com.hiro.questionnaires.dto.QuestionnaireAnswerResponse;
 import com.hiro.questionnaires.dto.QuestionnaireDto;
 import com.hiro.questionnaires.dto.QuestionnaireRequest;
 import com.hiro.questionnaires.dto.QuestionnaireResponse;
@@ -101,5 +103,33 @@ public class QuestionnaireController {
         } else {
             return ResponseEntity.status(422).build();
         }
+    }
+
+    @PostMapping("/questionnaire/{id}/answer")
+    public ResponseEntity<Void> newAnswer(@PathVariable Integer id, @RequestBody AnswerDto dto) {
+        if(id != null && dto != null) {
+            HttpStatus newAnswer = questionnaireService.newAnswer(id, dto);
+
+            if(newAnswer == HttpStatus.CREATED) {
+                return ResponseEntity.status(201).build();
+            } else if(newAnswer == HttpStatus.CONFLICT) {
+                return ResponseEntity.status(409).build();
+            } else {
+                return ResponseEntity.status(500).build();
+            }
+        } else {
+            return ResponseEntity.status(422).build();
+        }
+    }
+
+    @GetMapping("/questionnaire/{id}/answers")
+    public ResponseEntity<List<QuestionnaireAnswerResponse>> listAnswer(Integer id) {
+        List<QuestionnaireAnswerResponse> qaResponse = questionnaireService.listAnswer(id);
+
+        if(qaResponse == null) {
+            return ResponseEntity.status(404).build();
+        }
+
+        return ResponseEntity.status(2001).body(qaResponse);
     }
 }

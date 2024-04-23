@@ -12,20 +12,27 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.hiro.questionnaires.dto.AnswerDto;
 import com.hiro.questionnaires.dto.QuestionDto;
+import com.hiro.questionnaires.dto.QuestionnaireAnswerResponse;
 import com.hiro.questionnaires.dto.QuestionnaireDto;
 import com.hiro.questionnaires.dto.QuestionnaireRequest;
 import com.hiro.questionnaires.dto.QuestionnaireResponse;
+import com.hiro.questionnaires.entity.Answer;
 import com.hiro.questionnaires.entity.Question;
 import com.hiro.questionnaires.entity.Questionnaire;
 import com.hiro.questionnaires.entity.User;
 import com.hiro.questionnaires.mapper.QuestionnaireMapper;
+import com.hiro.questionnaires.repository.AnswerRepository;
 import com.hiro.questionnaires.repository.QuestionRepository;
 import com.hiro.questionnaires.repository.QuestionnaireRepository;
 import com.hiro.questionnaires.repository.UserRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class QuestionnaireService {
+
     @Autowired
     private QuestionnaireRepository questionnaireRepository;
 
@@ -35,6 +42,10 @@ public class QuestionnaireService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AnswerRepository answerRepository;
+
+    @Transactional
     public HttpStatus newQuestionnaire(QuestionnaireDto dto) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -166,6 +177,58 @@ public class QuestionnaireService {
             e.printStackTrace();
 
             return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus newAnswer(Integer id, AnswerDto dto) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            Optional<Questionnaire> questionnaireFromDb = questionnaireRepository.findById(id);
+            Optional<User> userFromDb = userRepository.findById(UUID.fromString(authentication.getName()));
+            Optional<Question> questionFromDb = questionRepository.findById(dto.question_id());
+
+            if(questionnaireFromDb.isPresent() && questionFromDb.isPresent()) {
+                Answer answer = new Answer();
+                answer.setDescription(dto.answer());
+                answer.setQuestion(questionFromDb.get());
+                answer.setUser(userFromDb.get());
+
+                answerRepository.save(answer);
+
+                return HttpStatus.CREATED;
+            } else {
+                return HttpStatus.NOT_FOUND;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public List<QuestionnaireAnswerResponse> listAnswer(Integer id) {
+        try {
+            Optional<Questionnaire> questionnaires = questionnaireRepository.findById(id);
+            List<Question> questions = questionRepository.findByQuestionnaire(questionnaires.get());
+
+            List<QuestionnaireAnswerResponse> answers = new ArrayList<>();
+
+            for(Question question : questions) {
+                List<Answer> answersFromDb = answerRepository.findByQuestion(question);
+
+                for(Answer answer : answersFromDb) {
+                    QuestionnaireAnswerResponse qaResponse = new QuestionnaireAnswerResponse(id, questionnaires.get().getName(), answer.getQuestion().getId(), answer.getDescription(), answer.getUser().getLogin());
+
+                    answers.add(qaResponse);
+                }
+            }
+
+            return answers;
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            return null;
         }
     }
 }
