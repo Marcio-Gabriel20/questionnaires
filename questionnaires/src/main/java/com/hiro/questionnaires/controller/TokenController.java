@@ -2,7 +2,6 @@ package com.hiro.questionnaires.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,7 +10,6 @@ import com.hiro.questionnaires.dto.LoginRequest;
 import com.hiro.questionnaires.dto.LoginResponse;
 import com.hiro.questionnaires.service.TokenService;
 
-@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 public class TokenController {
     @Autowired
@@ -22,9 +20,9 @@ public class TokenController {
         if(loginRequest != null && !loginRequest.login().isBlank() && !loginRequest.password().isBlank()) {
             LoginResponse loginResponse = tokenService.login(loginRequest);
 
-            return ResponseEntity.ok(loginResponse);
+            return ResponseEntity.status(200).body(loginResponse);
         } else {
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.status(422).build();
         }
 
     }

@@ -86,7 +86,6 @@ public class UserService {
 
             if(userFromDb.isPresent()) {
                 User user = userFromDb.get();
-
                 user.setLogin(dto.login());
                 user.setPassword(passwordEncoder.encode(dto.password()));
 
